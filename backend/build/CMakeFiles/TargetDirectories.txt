@@ -1,3 +1,0 @@
-D:/Decrypt-Encrypt/backend/build/CMakeFiles/EncryptionAPI.dir
-D:/Decrypt-Encrypt/backend/build/CMakeFiles/edit_cache.dir
-D:/Decrypt-Encrypt/backend/build/CMakeFiles/rebuild_cache.dir
