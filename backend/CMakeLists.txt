@@ -21,6 +21,7 @@ endif()
 
 # 1. Find the OpenSSL package
 find_package(OpenSSL REQUIRED)
+find_package(Threads REQUIRED)
 
 file(GLOB_RECURSE SOURCES
     src/*.c
@@ -29,6 +30,7 @@ file(GLOB_RECURSE SOURCES
 list(APPEND SOURCES
     external/mongoose/mongoose.c
     external/cJSON/cJSON.c
+    external/sqlite3/sqlite3.c
 )
 
 add_executable(EncryptionAPI ${SOURCES})
@@ -38,11 +40,16 @@ target_include_directories(EncryptionAPI PRIVATE
     include
     external/mongoose
     external/cJSON
+    external/sqlite3
     ${OPENSSL_INCLUDE_DIR}
 )
 
 # 2. Link OpenSSL and its dependencies to your executable
-target_link_libraries(EncryptionAPI PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(EncryptionAPI PRIVATE 
+    OpenSSL::SSL 
+    OpenSSL::Crypto
+    Threads::Threads
+)
 
 if(WIN32)
     target_link_libraries(EncryptionAPI PRIVATE ws2_32 crypt32)

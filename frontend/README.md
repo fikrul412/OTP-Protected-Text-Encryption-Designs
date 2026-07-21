@@ -1,77 +1,82 @@
-# Frontend — Svelte App
+    # Frontend — Svelte App
 
-Brief
-- Small Svelte + Vite frontend used to call the C backend's encrypt/decrypt endpoints. The UI contains two forms: encryption (produce `encrypted_data` + `generated_key`) and decryption (consume both to return plaintext message).
+    Brief
+    - Small Svelte + Vite frontend used to call the C backend's encrypt/decrypt endpoints. The UI contains two forms: encryption (produce `encrypted_data` + `generated_key`) and decryption (consume both to return plaintext message).
 
-Tech stack
-- Svelte (Vite)
-- Node.js (use a modern LTS, e.g., Node 18+)
-- npm
+    - Supports two modes: Server Side Encryption (backend encryption) and End-to-End Encryption (E2EE) with local client-side encryption and metadata extraction.
+    - OTP behavior is mocked in the frontend for the current prototype.
+    - In Server Side Encryption mode, the encryption key is not shown to the user and decryption is simulated with a hidden browser session key.
+    - In End-to-End Encryption mode, decryption is performed locally after mocked OTP verification.
 
-Install & run
-1. Open a terminal in `frontend/`.
-2. Install dependencies:
+    Tech stack
+    - Svelte (Vite)
+    - Node.js (use a modern LTS, e.g., Node 18+)
+    - npm
 
-```bash
-npm install
-```
+    Install & run
+    1. Open a terminal in `frontend/`.
+    2. Install dependencies:
 
-3. Start dev server:
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run dev
-```
+    3. Start dev server:
 
-Files of interest
-- `src/lib/components/EncryptForm.svelte` — encryption UI and wiring
-- `src/lib/components/DecryptForm.svelte` — decryption UI and wiring
-- `src/lib/services/api.js` — network calls to the backend (`/encrypt`, `/decrypt`)
+    ```bash
+    npm run dev
+    ```
 
-Usage
-- Use the Encrypt form to create an `Encrypted Data` and `Generated Encryption Key`.
-- Copy both values into the Decrypt form along with the OTP (the OTP flow is present but the backend currently treats OTP verification as a stub).
+    Files of interest
+    - `src/lib/components/EncryptForm.svelte` — encryption UI and wiring
+    - `src/lib/components/DecryptForm.svelte` — decryption UI and wiring
+    - `src/lib/services/api.js` — network calls to the backend (`/encrypt`, `/decrypt`)
 
-Notes
-- The frontend expects the backend at `http://localhost:3000` by default (`API_BASE_URL` in `src/lib/services/api.js`). Update if your server listens on a different host/port.
-# sv
+    Usage
+    - Use the Encrypt form to create an `Encrypted Data` and `Generated Encryption Key`.
+    - Copy both values into the Decrypt form along with the OTP (the OTP flow is present but the backend currently treats OTP verification as a stub).
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+    Notes
+    - The frontend expects the backend at `http://localhost:3000` by default (`API_BASE_URL` in `src/lib/services/api.js`). Update if your server listens on a different host/port.
+    # sv
 
-## Creating a project
+    Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-If you're seeing this, you've probably already done this step. Congrats!
+    ## Creating a project
 
-```sh
-# create a new project
-npx sv create my-app
-```
+    If you're seeing this, you've probably already done this step. Congrats!
 
-To recreate this project with the same configuration:
+    ```sh
+    # create a new project
+    npx sv create my-app
+    ```
 
-```sh
-# recreate this project
-npx sv@0.16.3 create --template minimal --no-types --install npm frontend
-```
+    To recreate this project with the same configuration:
 
-## Developing
+    ```sh
+    # recreate this project
+    npx sv@0.16.3 create --template minimal --no-types --install npm frontend
+    ```
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+    ## Developing
 
-```sh
-npm run dev
+    Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+    ```sh
+    npm run dev
 
-## Building
+    # or start the server and open the app in a new browser tab
+    npm run dev -- --open
+    ```
 
-To create a production version of your app:
+    ## Building
 
-```sh
-npm run build
-```
+    To create a production version of your app:
 
-You can preview the production build with `npm run preview`.
+    ```sh
+    npm run build
+    ```
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+    You can preview the production build with `npm run preview`.
+
+    > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

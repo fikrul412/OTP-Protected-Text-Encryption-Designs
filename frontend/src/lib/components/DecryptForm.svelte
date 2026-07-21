@@ -1,32 +1,88 @@
 <script>
-    import { sendDecryptionRequest } from '$lib/services/api.js';
+    import { sendOtpRequest, decryptLocalPayload } from '$lib/services/api.js';
 
     let encryptedData = $state("");
-    let otp = $state("");
     let encryptionKey = $state("");
+    let otp = $state("");
     let decryptedMessage = $state("");
     let errorLog = $state("");
+    let recipientType = $state("");
+    let recipient = $state("");
+    let metadataExtracted = $state(false);
+    let otpSent = $state(false);
+    let messageUnlocked = $state(false);
+    let localPayload = null;
 
     const methods = [
         {
-            name: "Key in DB",
+            name: "Server Side Encryption",
             requireOtp: true,
-            requireKey: false
+            requireKey: false,
+            showEncryptionKey: false
         },
 
         {
             name: "End-to-End Encryption (E2EE)",
             requireOtp: true,
-            requireKey: true
+            requireKey: true,
+            showEncryptionKey: true
         }
     ];
 
     let method = $state(methods[0]);
 
-    function sendOtp() {
-        // TODO:
-        // Send encrypted data to backend.
-        // Backend identifies recipient and sends OTP.
+    async function sendOtp() {
+        errorLog = "";
+        otp = "";
+        decryptedMessage = "";
+        recipientType = "";
+        recipient = "";
+        metadataExtracted = false;
+        otpSent = false;
+        messageUnlocked = false;
+
+        if (!encryptedData.trim()) {
+            errorLog = "Encrypted data cannot be blank.";
+            return;
+        }
+
+        if (method.name === "End-to-End Encryption (E2EE)") {
+            if (!encryptionKey.trim()) {
+                errorLog = "Encryption key cannot be blank.";
+                return;
+            }
+
+            try {
+                const payload = await decryptLocalPayload(encryptedData, encryptionKey);
+                recipientType = payload.recipient_type || "";
+                recipient = payload.recipient || "";
+                localPayload = payload;
+                metadataExtracted = true;
+            } catch (err) {
+                errorLog = "Unable to extract recipient metadata locally. Check the encrypted data and key.";
+                return;
+            }
+        } else {
+            recipientType = sessionStorage.getItem('server_recipient_type') || "";
+            recipient = sessionStorage.getItem('server_recipient') || "";
+            metadataExtracted = !!recipientType || !!recipient;
+        }
+
+        if (!recipientType || !recipient) {
+            errorLog = "Could not determine recipient metadata from the provided payload.";
+            return;
+        }
+
+        try {
+            const result = await sendOtpRequest(recipientType, recipient);
+            if (result && result.success) {
+                otpSent = true;
+            } else {
+                errorLog = "OTP request failed; please verify the recipient.";
+            }
+        } catch (err) {
+            errorLog = err.message || "OTP request failed.";
+        }
     }
 
     async function decrypt() {
@@ -38,28 +94,32 @@
             return;
         }
 
-        if (!encryptionKey.trim()) {
-            errorLog = "Encryption key cannot be blank.";
-            return;
-        }
-
         if (!otp.trim()) {
             errorLog = "OTP cannot be blank.";
             return;
         }
 
-        try {
-            const data = await sendDecryptionRequest(
-                method.name,
-                encryptedData,
-                otp,
-                encryptionKey
-            );
+        let keyToSend = encryptionKey;
+        if (method.name === "Server Side Encryption") {
+            keyToSend = sessionStorage.getItem('server_encryption_key') || "";
+            if (!keyToSend.trim()) {
+                errorLog = "Server-side encryption key is missing. Encrypt first in this browser session.";
+                return;
+            }
+        }
 
-            decryptedMessage = data.message;
+        if (!keyToSend.trim()) {
+            errorLog = "Encryption key cannot be blank.";
+            return;
+        }
+
+        try {
+            const payload = await decryptLocalPayload(encryptedData, keyToSend);
+            decryptedMessage = payload.message || "";
+            messageUnlocked = true;
         } catch (err) {
-            errorLog = "Could not communicate with the backend decryption engine.";
-            decryptedMessage = "CRITICAL ERROR: Check terminal logs.";
+            errorLog = "Unable to decrypt locally; check the encryption key and data.";
+            decryptedMessage = "";
         }
     }
 </script>
@@ -102,8 +162,27 @@
             type="button"
             onclick={sendOtp}
         >
-            Send OTP
+            {method.name === "End-to-End Encryption (E2EE)"
+                ? "Extract recipient and request OTP"
+                : "Request OTP"}
         </button>
+
+        {#if metadataExtracted}
+            <div class="metadata-preview">
+                <div><strong>Recipient Type:</strong> {recipientType}</div>
+                <div><strong>Recipient:</strong> {recipient}</div>
+            </div>
+        {/if}
+
+        {#if otpSent}
+            <div class="otp-note">Mock OTP sent. Enter the OTP below to unlock the message.</div>
+        {/if}
+
+        {#if method.name === "End-to-End Encryption (E2EE)"}
+            <div class="otp-note">E2EE decrypt is local: the payload is only released after mocked OTP verification.</div>
+        {:else}
+            <div class="otp-note">Server-side decrypt is currently mocked: the browser uses the hidden session key after OTP.</div>
+        {/if}
 
         <label for="otp">
             OTP
@@ -116,10 +195,12 @@
             placeholder="Enter the OTP..."
         />
 
+
+
     {/if}
 
 
-    {#if method.requireKey}
+    {#if method.showEncryptionKey}
 
         <label for="key">
             Encryption Key
@@ -134,7 +215,7 @@
     {/if}
 
 
-    <button onclick={decrypt}>
+    <button onclick={decrypt} disabled={!otpSent}>
         Decrypt
     </button>
 

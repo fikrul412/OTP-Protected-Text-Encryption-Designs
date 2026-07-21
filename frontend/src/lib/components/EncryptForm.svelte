@@ -1,6 +1,6 @@
 <script>
-    // Import the utility from your separate file
-    import { sendEncryptionRequest } from '$lib/services/api.js';
+    // Import utilities from your separate file
+    import { sendEncryptionRequest, generateLocalEncryption } from '$lib/services/api.js';
 
     let message = $state("");
     let recipientType = $state("Email");
@@ -12,14 +12,14 @@
 
     const methods = [
         {
-            name: "Key in DB",
-            requireRecipient: true,
-            showGeneratedKey: false
+            name: "Server Side Encryption",
+            requireRecipient: true
+            , showGeneratedKey: false
         },
         {
             name: "End-to-End Encryption (E2EE)",
-            requireRecipient: true,
-            showGeneratedKey: true
+            requireRecipient: true
+            , showGeneratedKey: true
         }
     ];
 
@@ -38,21 +38,33 @@
         }
 
         try {
-            // 2. Await the response from our isolated API handler
-            const data = await sendEncryptionRequest(
-                method.name,
-                message,
-                recipientType,
-                recipient
-            );
+            const data = method.name === "Server Side Encryption"
+                ? await sendEncryptionRequest(
+                    method.name,
+                    message,
+                    recipientType,
+                    recipient
+                )
+                : await generateLocalEncryption(
+                    method.name,
+                    message,
+                    recipientType,
+                    recipient
+                );
             
             // 3. Handle a successful response payload
             encryptedData = data.encrypted_data;
-            
             if (method.showGeneratedKey) {
                 generatedKey = data.generated_key;
             } else {
                 generatedKey = "";
+                try {
+                    sessionStorage.setItem('server_encryption_key', data.generated_key);
+                    sessionStorage.setItem('server_recipient_type', recipientType);
+                    sessionStorage.setItem('server_recipient', recipient);
+                } catch (e) {
+                    console.warn('Could not persist server-side key locally', e);
+                }
             }
         } catch (err) {
             // 4. Handle a network/decryption response failure cleanly
@@ -99,7 +111,7 @@
 
     <!-- Target your new async runner here -->
     <button onclick={handleEncrypt}>
-        Encrypt via C Backend
+        {method.name === "End-to-End Encryption (E2EE)" ? "Encrypt locally" : "Encrypt on server"}
     </button>
 
     {#if method.showGeneratedKey}
@@ -111,6 +123,12 @@
             placeholder="Generated key will appear here..."
         ></textarea>
     {/if}
+
+    <p class="note">
+        {method.name === "End-to-End Encryption (E2EE)"
+            ? "In E2EE mode, the encryption key is generated locally and should be saved by the user."
+            : "In Server Side mode, the backend generates the encrypted payload and the matching key."}
+    </p>
 
     <label for="encrypted-data">Encrypted Data</label>
     <textarea
