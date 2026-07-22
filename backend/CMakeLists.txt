@@ -6,7 +6,6 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-# Find native MSYS2 packages automatically
 find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
