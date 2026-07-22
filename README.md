@@ -45,7 +45,6 @@ This project provides a secure client-to-server decryption workflow:
     │   ├── lib/           # Shared components and API handlers
     │   └── routes/        # App routing pages (/decrypt)
     └── static/            # Static assets
-
 ```
 
 ## Technical Stack
@@ -91,13 +90,14 @@ pacman -S --needed \
    Create a .env file in backend/ (refer to backend/README.md for details).
 
 3. Build and execute:
+```
    cd backend
    cmake -B build -G Ninja
    cmake --build build
    cp .env build/.env
    cd build
    ./EncryptionAPI.exe
-
+```
 The backend service runs on http://localhost:3000.
 
 ---
@@ -107,16 +107,19 @@ The backend service runs on http://localhost:3000.
 Open a standard Terminal / PowerShell window:
 
 1. Install npm packages:
+```
    cd frontend
    npm install
-
+```
 2. Configure environment:
    Create a .env in frontend/:
-   VITE_API_BASE_URL=http://localhost:3000
-
+```
+   PUBLIC_API_BASE_URL=http://localhost:3000
+```
 3. Start development server:
+```
    npm run dev
-
+```
 The web app will be live at http://localhost:5173.
 
 ---
