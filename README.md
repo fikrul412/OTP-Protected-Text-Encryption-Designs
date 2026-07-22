@@ -36,7 +36,6 @@ This project provides a secure client-to-server decryption workflow:
 .
 ├── backend/               # C17 Mongoose / OpenSSL server
 │   ├── build/             # Output binaries and CMake build files
-│   ├── database/          # Local persistent storage
 │   ├── external/          # Embedded dependencies (cJSON, Mongoose)
 │   ├── include/           # Header files
 │   └── src/               # Core server logic and OpenSSL routines
