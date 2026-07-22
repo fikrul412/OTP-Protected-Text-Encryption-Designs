@@ -17,7 +17,6 @@ This backend handles server-side decryption of encrypted packages, OTP verificat
 ```
 backend/
 ├── build/                 # Compiled binaries and CMake build files
-├── database/              # Persistence / storage files
 ├── external/              # Third-party dependencies
 │   ├── cJSON/             # cJSON library files
 │   └── mongoose/          # Mongoose web server files
