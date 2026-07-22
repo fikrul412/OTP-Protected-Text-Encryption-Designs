@@ -12,7 +12,25 @@ This project provides a secure client-to-server decryption workflow:
 3. OTP Authentication & Decryption (Backend): The C backend receives the payload, initiates an OTP session, and performs OpenSSL decryption on the server only after two-factor validation succeeds.
 
 ---
+## System Workflow Diagram
 
+![alt text](SystemWorkflowDiagram.png)
+1. **Encryption Phase (Client-Side)**
+
+   - The user inputs the plaintext `text`, destination `recipient_type`, `recipient` email/address, and a secret `password`.
+   - The password is derived into an `aes_key` using **PBKDF2**.
+   - The payload is encrypted locally using **AES-256-GCM** to produce an `Encrypted Package` (containing salt, nonce, tag, and ciphertext).
+
+2. **Decryption Phase (Client to Server)**
+   - The client submits the `password` and `encrypted_pkg` to the C server.
+   - The backend runs **PBKDF2** using the submitted password and salt from the package to derive the `aes_key`.
+   - The backend decrypts the package using **AES-256-GCM** to retrieve the metadata (`text`, `recipient_type`, `recipient`).
+   - An **OTP Generation** event triggers: a time-sensitive OTP code is generated, stored in temporary session state, and dispatched to the `recipient` via SMTP over SMTPS.
+
+3. **Verification Phase (OTP Validation)**
+   - The user enters the `OTP Numbers` received in their email into the frontend interface.
+   - The client posts the OTP to the server for **OTP Verification**.
+   - Upon successful verification, the backend returns the decrypted `text` (plaintext) back to the client.
 ## Project Structure
 ```
 .
